@@ -1,0 +1,72 @@
+{
+  "model_details": {
+    "name": "BC5CDR Clinical NER \u2014 CRF",
+    "version": "1.0",
+    "type": "Token Classification (Named Entity Recognition)",
+    "framework": "HuggingFace Transformers + PyTorch",
+    "base_model": "sklearn-crfsuite",
+    "created_at": "2026-07-30 14:04:50",
+    "task": "BC5CDR NER \u2014 Chemical and Disease extraction from PubMed abstracts",
+    "benchmark": "BC5CDR (BioCreative V CDR) \u2014 industry standard biomedical NER"
+  },
+  "intended_use": {
+    "primary_use": "Extract Chemical and Disease entities from biomedical literature",
+    "use_cases": [
+      "Drug-disease relation extraction",
+      "Pharmacovigilance ADE detection",
+      "Clinical trial participant screening",
+      "Biomedical literature mining"
+    ],
+    "out_of_scope": [
+      "General-purpose NER",
+      "Non-biomedical text",
+      "Real-time ICU monitoring"
+    ]
+  },
+  "dataset": {
+    "source": "BC5CDR \u2014 BioCreative V CDR Task (tner/bc5cdr on HuggingFace)",
+    "domain": "Biomedical / PubMed abstracts",
+    "train_sentences": 5228,
+    "val_sentences": 5330,
+    "test_sentences": 5865,
+    "entity_types": [
+      "Chemical",
+      "Disease"
+    ],
+    "benchmark_f1": "~0.87 (BioBERT state-of-the-art on BC5CDR)"
+  },
+  "metrics": {
+    "test_f1": 0.8093,
+    "test_precision": 0.8542,
+    "test_recall": 0.7688,
+    "confidence_threshold": 0.8,
+    "per_entity_f1": {
+      "Chemical": 0.8547,
+      "Disease": 0.7551
+    },
+    "entity_f1_variance": 0.002480040000000001
+  },
+  "business_impact": {
+    "missed_chemical_entities": 913,
+    "missed_disease_entities": 867,
+    "total_estimated_cost_inr": 757700.0,
+    "note": "Cost based on pharma clinical NLP workflow estimates"
+  },
+  "pipeline_config": {
+    "c1": 0.01,
+    "c2": 0.01,
+    "max_iterations": 200
+  },
+  "thresholds": {
+    "confidence_threshold": 0.8
+  },
+  "limitations": [
+    "Trained on PubMed abstracts \u2014 may underperform on clinical EHR notes",
+    "BC5CDR covers 2 entity types only (Chemical + Disease)",
+    "Requires retraining for post-2024 drug approvals"
+  ],
+  "ethical_considerations": [
+    "Model predictions must not replace physician judgment",
+    "All Chemical entities in ADE context flagged for human review"
+  ]
+}

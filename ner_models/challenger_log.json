@@ -1,0 +1,64 @@
+[
+  {
+    "decision": "PROMOTED",
+    "reason": "No existing champion \u2014 first model auto-promoted",
+    "challenger_name": "CRF",
+    "challenger_f1": 0.8093,
+    "challenger_precision": 0.8542,
+    "challenger_recall": 0.7688,
+    "champion_name": null,
+    "champion_f1": null,
+    "evaluated_at": "2026-07-30 11:53:32"
+  },
+  {
+    "decision": "REJECTED",
+    "reason": "Gates failed: F1 improvement +0.0000 < 0.005",
+    "evaluated_at": "2026-07-30 14:04:50",
+    "challenger_name": "CRF",
+    "challenger_f1": 0.8093,
+    "challenger_precision": 0.8542,
+    "challenger_recall": 0.7688,
+    "challenger_gap": 0.0025,
+    "champion_name": "BC5CDR Clinical NER \u2014 CRF",
+    "champion_f1": 0.8093,
+    "gates": {
+      "f1_improvement_passed": false,
+      "min_f1_passed": true,
+      "gap_passed": true
+    }
+  },
+  {
+    "decision": "PROMOTED",
+    "reason": "Challenger beats champion: F1 0.8093 \u2192 0.8877 (+0.0784)",
+    "evaluated_at": "2026-07-30 19:46:32",
+    "challenger_name": "BioBERT",
+    "challenger_f1": 0.8877,
+    "challenger_precision": 0.8812,
+    "challenger_recall": 0.8944,
+    "challenger_gap": 0.0018,
+    "champion_name": "BC5CDR Clinical NER \u2014 CRF",
+    "champion_f1": 0.8093,
+    "gates": {
+      "f1_improvement_passed": true,
+      "min_f1_passed": true,
+      "gap_passed": true
+    }
+  },
+  {
+    "decision": "REJECTED",
+    "reason": "Gates failed: F1 improvement +0.0000 < 0.005",
+    "evaluated_at": "2026-07-31 20:34:11",
+    "challenger_name": "BioBERT",
+    "challenger_f1": 0.8847,
+    "challenger_precision": 0.8792,
+    "challenger_recall": 0.8903,
+    "challenger_gap": 0.0018,
+    "champion_name": "BC5CDR Clinical NER \u2014 BioBERT",
+    "champion_f1": 0.8847,
+    "gates": {
+      "f1_improvement_passed": false,
+      "min_f1_passed": true,
+      "gap_passed": true
+    }
+  }
+]

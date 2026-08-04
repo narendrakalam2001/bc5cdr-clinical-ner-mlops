@@ -1,0 +1,56 @@
+# ============================================================
+# REQUIREMENTS — BC5CDR Clinical NER System
+# ============================================================
+# QUICK INSTALL (minimum to run pipeline):
+#   pip install datasets seqeval sklearn-crfsuite
+#
+# FULL INSTALL:
+#   pip install -r requirements.txt
+#
+# FOR BIOBERT (GPU recommended):
+#   pip install transformers torch "accelerate>=1.1.0"
+# ============================================================
+
+# ── DATASET (BC5CDR auto-download) ───────────────────────────
+requests                  # BC5CDR Parquet download from HF datasets-server API
+pyarrow                   # required by pandas to read .parquet files
+datasets>=2.14.0          # optional — only used by other parts of the repo, if any
+
+# ── NLP CORE — Required for pipeline ─────────────────────────
+seqeval                   # entity-level F1 evaluation (NER standard)
+sklearn-crfsuite          # CRF baseline model
+
+# ── API ───────────────────────────────────────────────────────
+fastapi
+uvicorn[standard]
+
+# ── DATA ──────────────────────────────────────────────────────
+pandas==2.1.4
+numpy==1.26.4
+
+# ── ML CORE ───────────────────────────────────────────────────
+scikit-learn==1.3.2
+joblib
+
+# ── BIOBERT (optional — GPU recommended) ─────────────────────
+transformers>=4.38.0
+torch>=2.0.0
+accelerate>=1.1.0
+
+# ── EXPERIMENT TRACKING ───────────────────────────────────────
+mlflow
+
+# ── VISUALIZATION ─────────────────────────────────────────────
+matplotlib
+seaborn
+
+# ── DASHBOARD ─────────────────────────────────────────────────
+streamlit
+requests
+
+# ── TESTING ───────────────────────────────────────────────────
+pytest
+pytest-cov
+
+# ── UTILITIES ─────────────────────────────────────────────────
+tqdm

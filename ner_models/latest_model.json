@@ -1,0 +1,8 @@
+{
+  "model_name": "BioBERT",
+  "model_path": "ner_models\\ner_model_BioBERT_v1",
+  "model_type": "bert",
+  "confidence_threshold": 0.8,
+  "model_card_path": "ner_models\\model_card_BioBERT_v1.json",
+  "updated_at": "2026-07-30 19:46:32"
+}
