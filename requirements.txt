@@ -11,6 +11,9 @@
 #   pip install transformers torch "accelerate>=1.1.0"
 # ============================================================
 
+wheel
+setuptools>=65
+
 # ── DATASET (BC5CDR auto-download) ───────────────────────────
 requests                  # BC5CDR Parquet download from HF datasets-server API
 pyarrow                   # required by pandas to read .parquet files
