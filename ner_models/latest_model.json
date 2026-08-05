@@ -1,8 +1,8 @@
 {
-  "model_name": "BioBERT",
-  "model_path": "ner_models\\ner_model_BioBERT_v1",
-  "model_type": "bert",
+  "model_name": "CRF",
+  "model_path": "ner_model_CRF_v1.joblib",
+  "model_type": "crf",
   "confidence_threshold": 0.8,
-  "model_card_path": "ner_models\\model_card_BioBERT_v1.json",
-  "updated_at": "2026-07-30 19:46:32"
+  "model_card_path": "ner_models/model_card_CRF_v1.json",
+  "updated_at": "2026-08-05 00:00:00"
 }
