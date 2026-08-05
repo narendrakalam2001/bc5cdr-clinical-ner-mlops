@@ -127,13 +127,17 @@ def load_bert_champion():
                 logger.warning("Set HF_MODEL_REPO env var to auto-download from HuggingFace Hub")
                 return None, None
 
+        import torch
         tokenizer = AutoTokenizer.from_pretrained(model_path)
         model     = AutoModelForTokenClassification.from_pretrained(
             model_path,
-            num_labels = NUM_LABELS,
-            id2label   = ID2LABEL,
-            label2id   = LABEL2ID,
+            num_labels        = NUM_LABELS,
+            id2label           = ID2LABEL,
+            label2id           = LABEL2ID,
+            torch_dtype        = torch.float16,   # half the weight memory (fp32 -> fp16)
+            low_cpu_mem_usage  = True,             # avoids double-allocating memory during load
         )
+        model.eval()
 
         logger.info("BERT champion loaded: %s", model_path)
         return model, tokenizer

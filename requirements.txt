@@ -37,6 +37,7 @@ joblib
 
 # ── BIOBERT (optional — GPU recommended) ─────────────────────
 transformers>=4.38.0
+--extra-index-url https://download.pytorch.org/whl/cpu
 torch>=2.0.0
 accelerate>=1.1.0
 
