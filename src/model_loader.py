@@ -106,26 +106,26 @@ def load_bert_champion():
 
         model_path = registry.get("model_path", "")
 
-                if not os.path.exists(model_path):
-                    # Local folder missing — this happens on Render/fresh clones
-                    # because ner_model_BioBERT_v1/ (400MB+) is NOT pushed to git.
-                    # Instead we host it on HuggingFace Hub and download it here,
-                    # once, at server startup.
-                    hf_repo = os.getenv("HF_MODEL_REPO", "")
-                    if hf_repo:
-                        logger.info("Local model not found — downloading from HF Hub: %s", hf_repo)
-                        try:
-                            from huggingface_hub import snapshot_download
-                            downloaded_path = snapshot_download(repo_id=hf_repo)
-                            model_path = downloaded_path
-                            logger.info("Downloaded champion model to: %s", model_path)
-                        except Exception as e:
-                            logger.error("Failed to download model from HF Hub (%s): %s", hf_repo, e)
-                            return None, None
-                    else:
-                        logger.warning("BERT model path not found: %s", model_path)
-                        logger.warning("Set HF_MODEL_REPO env var to auto-download from HuggingFace Hub")
-                        return None, None
+        if not os.path.exists(model_path):
+            # Local folder missing -- this happens on Render/fresh clones
+            # because ner_model_BioBERT_v1/ (400MB+) is NOT pushed to git.
+            # Instead we host it on HuggingFace Hub and download it here,
+            # once, at server startup.
+            hf_repo = os.getenv("HF_MODEL_REPO", "")
+            if hf_repo:
+                logger.info("Local model not found -- downloading from HF Hub: %s", hf_repo)
+                try:
+                    from huggingface_hub import snapshot_download
+                    downloaded_path = snapshot_download(repo_id=hf_repo)
+                    model_path = downloaded_path
+                    logger.info("Downloaded champion model to: %s", model_path)
+                except Exception as e:
+                    logger.error("Failed to download model from HF Hub (%s): %s", hf_repo, e)
+                    return None, None
+            else:
+                logger.warning("BERT model path not found: %s", model_path)
+                logger.warning("Set HF_MODEL_REPO env var to auto-download from HuggingFace Hub")
+                return None, None
 
         tokenizer = AutoTokenizer.from_pretrained(model_path)
         model     = AutoModelForTokenClassification.from_pretrained(
