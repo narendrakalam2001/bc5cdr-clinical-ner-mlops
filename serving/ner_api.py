@@ -15,6 +15,32 @@ from services.prediction_service import predict_entities, predict_batch_entities
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+import numpy as np
+
+
+def _sanitize_for_json(obj):
+    """
+    Recursively converts numpy types (float32/float64, int32/int64, bool_,
+    ndarray) into native Python types. sklearn-crfsuite / pycrfsuite can
+    return numpy scalars/arrays inside prediction results, which FastAPI's
+    JSON encoder cannot serialize -- causing an unhandled 500 error.
+    This guarantees every response is plain-Python before FastAPI ever
+    sees it, regardless of which nested field the numpy type came from.
+    """
+    if isinstance(obj, dict):
+        return {k: _sanitize_for_json(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_sanitize_for_json(v) for v in obj]
+    if isinstance(obj, np.ndarray):
+        return _sanitize_for_json(obj.tolist())
+    if isinstance(obj, (np.floating,)):
+        return float(obj)
+    if isinstance(obj, (np.integer,)):
+        return int(obj)
+    if isinstance(obj, np.bool_):
+        return bool(obj)
+    return obj
+
 app = FastAPI(
     title       = "BC5CDR Clinical NER API",
     description = (
@@ -151,7 +177,7 @@ def predict(request: NERInput):
         
     result["latency_seconds"] = round(time.time() - start, 4)
     result["model_type"]      = model_state["model_type"]
-    return result
+    return _sanitize_for_json(result)
 
 
 @app.post("/predict_batch")
@@ -166,8 +192,8 @@ def predict_batch(request: NERBatchInput):
         )
     except Exception as e:
         raise HTTPException(500, str(e))
-    return {"results": results, "total_texts": len(results),
-            "latency_seconds": round(time.time() - start, 4)}
+    return _sanitize_for_json({"results": results, "total_texts": len(results),
+            "latency_seconds": round(time.time() - start, 4)})
 
 
 def _log_prediction(text, entities, latency, model_type):
