@@ -267,24 +267,22 @@ else:
 st.markdown("---")
 st.subheader("📋 Section 5 — Recent Predictions Log")
 
-if os.path.exists(LOG_PATH):
-    df_log = pd.read_csv(LOG_PATH)
-    if not df_log.empty:
-        st.caption(f"Total predictions logged: {len(df_log)}")
-        recent = df_log.tail(50).copy()
-        if "timestamp" in recent.columns:
-            recent["timestamp"] = pd.to_datetime(
-                recent["timestamp"], unit="s"
-            ).dt.strftime("%Y-%m-%d %H:%M:%S")
-        st.dataframe(recent[::-1].reset_index(drop=True), use_container_width=True)
-    else:
-        st.info("No predictions logged yet.")
-else:
-    st.info("prediction_logs.csv not found. Make predictions via sidebar.")
+try:
+    _base_url = os.getenv("NER_API_URL", "https://bc5cdr-clinical-ner-mlops.onrender.com").rstrip("/")
+    _resp = requests.get(f"{_base_url}/recent_predictions", timeout=15)
+    _resp.raise_for_status()
+    _data = _resp.json()
+    _preds = _data.get("predictions", [])
 
-st.markdown("---")
-st.caption(
-    "BC5CDR Clinical NER System | Narendra Kalam | MSc CS (Gold Medal — NASSCOM) | "
-    "[GitHub](https://github.com/narendrakalam/bc5cdr-clinical-ner) | "
-    "[API Docs](https://bc5cdr-clinical-ner.onrender.com/docs)"
-)
+    if _preds:
+        st.caption(f"Total predictions logged this session: {_data.get('total_logged', len(_preds))}")
+        df_log = pd.DataFrame(_preds)
+        if "timestamp" in df_log.columns:
+            df_log["timestamp"] = pd.to_datetime(
+                df_log["timestamp"], unit="s"
+            ).dt.strftime("%Y-%m-%d %H:%M:%S")
+        st.dataframe(df_log, use_container_width=True)
+    else:
+        st.info("No predictions logged yet this session. Make predictions via sidebar.")
+except Exception as e:
+    st.info(f"Could not fetch recent predictions from API: {e}")

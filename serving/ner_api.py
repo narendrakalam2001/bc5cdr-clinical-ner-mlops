@@ -4,6 +4,7 @@
 
 import os, json, time, logging
 import pandas as pd
+from collections import deque
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, validator
 from typing import List, Optional
@@ -29,6 +30,11 @@ model_state = {
     "crf": None, "extractor": None,
     "info": None, "threshold": 0.80, "model_type": "none",
 }
+
+# In-memory recent predictions store — works even on ephemeral disks
+# (Render's filesystem resets on every redeploy, so we don't rely on
+# the CSV file for the dashboard; deque(maxlen=50) auto-drops old entries).
+recent_predictions = deque(maxlen=50)
 
 try:
     registry, threshold = load_latest_model()
@@ -137,8 +143,12 @@ def predict(request: NERInput):
     except Exception as e:
         raise HTTPException(500, str(e))
 
-    _log_prediction(request.text, result.get("entities", []),
-                    time.time() - start, model_state["model_type"])
+    try:
+        _log_prediction(request.text, result.get("entities", []),
+                        time.time() - start, model_state["model_type"])
+    except Exception as e:
+        logger.warning("Prediction logging failed (non-fatal): %s", e)
+        
     result["latency_seconds"] = round(time.time() - start, 4)
     result["model_type"]      = model_state["model_type"]
     return result
@@ -161,8 +171,16 @@ def predict_batch(request: NERBatchInput):
 
 
 def _log_prediction(text, entities, latency, model_type):
-    log_path = "logs/prediction_logs.csv"
-    os.makedirs("logs", exist_ok=True)
+    """
+    Logs a prediction two ways:
+      1. In-memory deque -> powers GET /recent_predictions (always works,
+         survives Render's ephemeral disk, no file I/O risk).
+      2. CSV file (best-effort) -> for local dev / if a persistent disk
+         is attached. Wrapped in try/except so a disk write failure
+         NEVER crashes the /predict request (this was the root cause of
+         the HTTP 500 errors — a missing/unwritable logs/ dir raised an
+         unhandled exception outside the predict() try/except block).
+    """
     record = {
         "timestamp":       time.time(),
         "text_length":     len(text),
@@ -174,8 +192,33 @@ def _log_prediction(text, entities, latency, model_type):
         "model_type":      model_type,
         "latency_s":       round(latency, 4),
     }
-    log_df = pd.DataFrame([record])
-    if os.path.exists(log_path):
-        log_df.to_csv(log_path, mode="a", header=False, index=False)
-    else:
-        log_df.to_csv(log_path, index=False)
+
+    # 1. In-memory store (always succeeds, powers /recent_predictions)
+    recent_predictions.append(record)
+
+    # 2. Best-effort CSV write (never let this crash the request)
+    try:
+        log_path = "logs/prediction_logs.csv"
+        os.makedirs("logs", exist_ok=True)
+        log_df = pd.DataFrame([record])
+        if os.path.exists(log_path):
+            log_df.to_csv(log_path, mode="a", header=False, index=False)
+        else:
+            log_df.to_csv(log_path, index=False)
+    except Exception as e:
+        logger.warning("Could not write prediction log to CSV (non-fatal): %s", e)
+        
+        
+@app.get("/recent_predictions")
+def get_recent_predictions():
+    """
+    Returns the last 50 predictions from the in-memory store.
+    Used by the monitoring dashboard's "Recent Predictions Log" section
+    instead of reading a local CSV file — the dashboard runs on a
+    different machine (Streamlit Cloud) than the API (Render), so it
+    can never see the API's local disk directly.
+    """
+    return {
+        "total_logged": len(recent_predictions),
+        "predictions":  list(recent_predictions)[::-1],  # newest first
+    }
