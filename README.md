@@ -1,6 +1,6 @@
 # 🧬 BC5CDR Clinical NER System
 
-[![CI](https://github.com/narendrakalam/bc5cdr-clinical-ner-mlops/actions/workflows/ci.yml/badge.svg)](https://github.com/narendrakalam/bc5cdr-clinical-ner-mlops/actions)
+[![CI](https://github.com/narendrakalam2001/bc5cdr-clinical-ner-mlops/actions/workflows/ci.yml/badge.svg)](https://github.com/narendrakalam2001/bc5cdr-clinical-ner-mlops/actions)
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green.svg)](https://fastapi.tiangolo.com)
 [![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-red.svg)](https://streamlit.io)
