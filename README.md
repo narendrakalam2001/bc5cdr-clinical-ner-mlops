@@ -1,6 +1,6 @@
 # 🧬 BC5CDR Clinical NER System
 
-[![CI](https://github.com/narendrakalam/bc5cdr-clinical-ner/actions/workflows/ci.yml/badge.svg)](https://github.com/narendrakalam/bc5cdr-clinical-ner/actions)
+[![CI](https://github.com/narendrakalam/bc5cdr-clinical-ner-mlops/actions/workflows/ci.yml/badge.svg)](https://github.com/narendrakalam/bc5cdr-clinical-ner-mlops/actions)
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green.svg)](https://fastapi.tiangolo.com)
 [![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-red.svg)](https://streamlit.io)
@@ -58,11 +58,15 @@ from unstructured biomedical literature at scale.
 
 | Service | URL |
 |---|---|
-| 🚀 **FastAPI (Swagger UI)** | [https://bc5cdr-clinical-ner.onrender.com/docs](https://bc5cdr-clinical-ner.onrender.com/docs) |
-| 📊 **Monitoring Dashboard** | [https://bc5cdr-ner-dashboard.streamlit.app](https://bc5cdr-ner-dashboard.streamlit.app) |
-| 📦 **Dataset** | [tner/bc5cdr on HuggingFace](https://huggingface.co/datasets/tner/bc5cdr) |
+| 🚀 **FastAPI (Swagger UI)** | [https://bc5cdr-clinical-ner-mlops.onrender.com/docs](https://bc5cdr-clinical-ner-mlops.onrender.com/docs) |
+| 📊 **Monitoring Dashboard** | [https://bc5cdr-clinical-ner-mlops.streamlit.app](https://bc5cdr-clinical-ner-mlops.streamlit.app) |
+| 📓 **EDA Notebook** | [notebooks/bc5cdr_eda.ipynb](notebooks/bc5cdr_eda.ipynb) |
 
 > ⚠️ Render free tier: first request may take 30–60 seconds (cold start).
+> **Note:** The live demo runs the CRF model (F1=0.8093, ~2MB) for compatibility with 
+> free-tier hosting (512MB RAM). The BioBERT champion (F1=0.8847) is fully trained, 
+> evaluated, and documented above — see [Model Comparison Table](#-model-comparison-table). 
+> To run BioBERT locally: `python scripts/train_model.py` then `python scripts/run_api.py`.
 
 ---
 
@@ -74,60 +78,60 @@ from unstructured biomedical literature at scale.
 ╔══════════════════════════════════════════════════════════════════════════════════╗
 ║                 BC5CDR CLINICAL NER — 5-LAYER PRODUCTION SYSTEM                  ║
 ╠══════════════════════════════════════════════════════════════════════════════════╣
-║                                                                                    ║
+║                                                                                  ║
 ║  ┌─────────────────────────────── DATA LAYER ──────────────────────────────┐     ║
 ║  │  HF Parquet Export  →  BIO Label Decode  →  Schema Check  →  Leakage    │     ║
-║  │  tner/bc5cdr · 5,228/5,330/5,865 train/val/test · Chemical + Disease   │     ║
-║  └───────────────────────────────────┬──────────────────────────────────────┘   ║
+║  │  tner/bc5cdr · 5,228/5,330/5,865 train/val/test · Chemical + Disease    │     ║
+║  └───────────────────────────────────┬─────────────────────────────────────┘     ║
 ║                                      ▼                                           ║
-║  ┌─────────────────────────── TRAINING PIPELINE ───────────────────────────┐   ║
-║  │                                                                          │   ║
-║  │  ┌──────────────────┐    ┌───────────────┐    ┌──────────────────────┐  │   ║
-║  │  │  Window Features │    │  CRF + BioBERT│    │  Seqeval Strict Eval │  │   ║
-║  │  │  prev/next ctx   │───▶│  8-trial tune │───▶│  entity-level P/R/F1 │  │   ║
-║  │  │  BOS/EOS markers │    │  fp16 + CUDA  │    │  per-entity breakdown│  │   ║
-║  │  └──────────────────┘    └───────────────┘    └──────────────────────┘  │   ║
-║  │                                                                          │   ║
-║  │  Majority Baseline (F1≈0 sanity)  →  CRF (sklearn-crfsuite lbfgs)      │   ║
-║  │  BioBERT (dmis-lab/biobert-base-cased-v1.2, 5 epochs) ⭐ CHAMPION      │   ║
-║  │                                                                          │   ║
-║  │  CHAMPION → BioBERT  F1=0.8847  Chemical F1=0.9239  Disease F1=0.8380 │   ║
-║  └───────────────────────────────────┬──────────────────────────────────────┘   ║
+║  ┌─────────────────────────── TRAINING PIPELINE ───────────────────────────┐     ║
+║  │                                                                         │     ║
+║  │  ┌──────────────────┐    ┌───────────────┐    ┌──────────────────────┐  │     ║
+║  │  │  Window Features │    │  CRF + BioBERT│    │  Seqeval Strict Eval │  │     ║
+║  │  │  prev/next ctx   │───▶│  8-trial tune │───▶│  entity-level P/R/F1│  │     ║
+║  │  │  BOS/EOS markers │    │  fp16 + CUDA  │    │  per-entity breakdown│  │     ║
+║  │  └──────────────────┘    └───────────────┘    └──────────────────────┘  │     ║
+║  │                                                                         │     ║
+║  │  Majority Baseline (F1≈0 sanity)  →  CRF (sklearn-crfsuite lbfgs)       │     ║
+║  │  BioBERT (dmis-lab/biobert-base-cased-v1.2, 5 epochs) ⭐ CHAMPION      │     ║
+║  │                                                                         │     ║
+║  │  CHAMPION → BioBERT  F1=0.8847  Chemical F1=0.9239  Disease F1=0.8380   │     ║
+║  └───────────────────────────────────┬─────────────────────────────────────┘     ║
 ║                                      ▼                                           ║
-║  ┌──────────────────────── CHAMPION-CHALLENGER ────────────────────────────┐   ║
-║  │                                                                          │   ║
-║  │  Gate 1: F1 improvement    ≥ 0.005  →  ✅ PASS / ❌ FAIL               │   ║
-║  │  Gate 2: Overall F1        ≥ 0.70   →  ✅ PASS / ❌ FAIL               │   ║
-║  │  Gate 3: Per-entity gap    ≤ 0.15   →  ✅ PASS / ❌ FAIL               │   ║
-║  │                                                                          │   ║
-║  │  ALL gates pass → PROMOTED (latest_model.json updated)                 │   ║
-║  │  ANY gate fails → REJECTED (champion retained, result logged)           │   ║
-║  └───────────────────────────────────┬──────────────────────────────────────┘   ║
+║  ┌──────────────────────── CHAMPION-CHALLENGER ────────────────────────────┐     ║
+║  │                                                                         │     ║
+║  │  Gate 1: F1 improvement    ≥ 0.005  →  ✅ PASS / ❌ FAIL               │     ║
+║  │  Gate 2: Overall F1        ≥ 0.70   →  ✅ PASS / ❌ FAIL               │     ║
+║  │  Gate 3: Per-entity gap    ≤ 0.15   →  ✅ PASS / ❌ FAIL               │     ║
+║  │                                                                         │     ║
+║  │  ALL gates pass → PROMOTED (latest_model.json updated)                  │     ║
+║  │  ANY gate fails → REJECTED (champion retained, result logged)           │     ║
+║  └───────────────────────────────────┬─────────────────────────────────────┘     ║
 ║                                      ▼                                           ║
-║  ┌──────────────────────────── SERVING LAYER ──────────────────────────────┐   ║
-║  │                                                                          │   ║
-║  │  Model Loader  →  Entity Decoder  →  ADE Rule Engine  →  FastAPI        │   ║
-║  │                                                                          │   ║
-║  │  POST /predict        → single-text entity extraction   (→ entities[])  │   ║
-║  │  POST /predict_batch  → batch entity extraction         (→ 100 texts)   │   ║
-║  │  GET  /health         → API health check          (→ {status, loaded})  │   ║
-║  │  GET  /model_info     → champion model card        (→ metrics + card)   │   ║
-║  │                                                                          │   ║
-║  │  ADE Rule Engine:  Chemical entity + Disease entity in same text        │   ║
-║  │                    → requires_review=true → pharmacovigilance alert     │   ║
-║  └───────────────────────────────────┬──────────────────────────────────────┘   ║
+║  ┌──────────────────────────── SERVING LAYER ──────────────────────────────┐     ║
+║  │                                                                         │     ║
+║  │  Model Loader  →  Entity Decoder  →  ADE Rule Engine  →  FastAPI        │     ║
+║  │                                                                         │     ║
+║  │  POST /predict        → single-text entity extraction   (→ entities[])  │     ║
+║  │  POST /predict_batch  → batch entity extraction         (→ 100 texts)   │     ║
+║  │  GET  /health         → API health check          (→ {status, loaded})  │     ║
+║  │  GET  /model_info     → champion model card        (→ metrics + card)   │     ║
+║  │                                                                         │     ║
+║  │  ADE Rule Engine:  Chemical entity + Disease entity in same text        │     ║
+║  │                    → requires_review=true → pharmacovigilance alert     │     ║
+║  └───────────────────────────────────┬─────────────────────────────────────┘     ║
 ║                                      ▼                                           ║
-║  ┌─────────────────── MONITORING LAYER — STREAMLIT DASHBOARD ──────────────┐   ║
-║  │                                                                          │   ║
-║  │  Section 1: Real-Time Alerts     → ADE co-occurrence % · PSI critical  │   ║
-║  │  Section 2: Champion-Challenger  → decision · 3-gate status · history  │   ║
-║  │  Section 3: KPIs + Per-Entity    → F1/P/R · Chemical vs Disease bars   │   ║
-║  │  Section 4: Entity Drift (PSI)   → label PSI + per-entity PSI          │   ║
-║  │  Section 5: Recent Predictions   → audit log · scenario · review flag  │   ║
-║  │  Sidebar:   Live Entity Extraction → paste text → instant entity tags  │   ║
-║  │                                                                          │   ║
-║  │  Simulator: 3 scenarios (normal · ade_report · multi_chemical)         │   ║
-║  └──────────────────────────────────────────────────────────────────────────┘   ║
+║  ┌─────────────────── MONITORING LAYER — STREAMLIT DASHBOARD ──────────────┐     ║
+║  │                                                                         │     ║
+║  │  Section 1: Real-Time Alerts     → ADE co-occurrence % · PSI critical   │     ║
+║  │  Section 2: Champion-Challenger  → decision · 3-gate status · history   │     ║
+║  │  Section 3: KPIs + Per-Entity    → F1/P/R · Chemical vs Disease bars    │     ║
+║  │  Section 4: Entity Drift (PSI)   → label PSI + per-entity PSI           │     ║
+║  │  Section 5: Recent Predictions   → audit log · scenario · review flag   │     ║
+║  │  Sidebar:   Live Entity Extraction → paste text → instant entity tags   │     ║
+║  │                                                                         │     ║
+║  │  Simulator: 3 scenarios (normal · ade_report · multi_chemical)          │     ║
+║  └─────────────────────────────────────────────────────────────────────────┘     ║
 ╚══════════════════════════════════════════════════════════════════════════════════╝
 ```
 
@@ -208,7 +212,7 @@ Live prediction audit log — scenario · entity count · review flag · ADE ale
 ## 📁 Project Structure
 
 ```
-bc5cdr-clinical-ner/
+bc5cdr-clinical-ner-mlops/
 │
 ├── src/                                # Core ML system
 │   ├── config.py                       # BC5CDR entity types, gates, PSI/cost thresholds
@@ -241,6 +245,9 @@ bc5cdr-clinical-ner/
 │   ├── run_api.py                      # python scripts/run_api.py
 │   ├── run_dashboard.py                # python scripts/run_dashboard.py
 │   └── run_simulation.py               # python scripts/run_simulation.py --n 30 --scenario random
+│
+├── notebooks/
+│   └── bc5cdr_eda.ipynb                # Professional EDA — 23 steps
 │
 ├── data/
 │   └── sample_bc5cdr_dataset.csv       # Sample biomedical sentences for quick local testing
@@ -282,6 +289,10 @@ bc5cdr-clinical-ner/
 ├── Dockerfile.dashboard                # Streamlit dashboard container
 ├── docker-compose.yml                  # API + Dashboard (ports 8000 + 8501)
 ├── .github/workflows/ci.yml            # GitHub Actions — pytest on every push
+├── .gitignore
+├── .dockerignore
+├── LICENSE                             # MIT License
+├── README.md                           # This file
 ├── render.yaml                         # Render.com deployment config
 ├── requirements.txt                    # Full training requirements
 ├── requirements_api.txt                # Lean API-only requirements
@@ -296,15 +307,15 @@ bc5cdr-clinical-ner/
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/NarendraKalam/bc5cdr-clinical-ner.git
-cd bc5cdr-clinical-ner
+git clone https://github.com/narendrakalam/bc5cdr-clinical-ner-mlops.git
+cd bc5cdr-clinical-ner-mlops
 pip install -r requirements.txt
 ```
 
 ### 2. Dataset — Auto Download (No Manual Steps)
 
 The BC5CDR dataset downloads automatically from HuggingFace's Parquet export
-(`tner/bc5cdr`) the first time you run training — no Kaggle key, no manual
+[`tner/bc5cdr`](https://huggingface.co/datasets/tner/bc5cdr) the first time you run training — no Kaggle key, no manual
 file placement. A small `data/sample_bc5cdr_dataset.csv` is included for
 quick offline testing of the entity decoder without needing the full dataset.
 
@@ -468,11 +479,81 @@ curl -X POST "http://localhost:8000/predict_batch" \
 
 | Model | F1 | Precision | Recall | Token Accuracy | FN Chemical | FN Disease | Total Cost (₹) |
 |---|---|---|---|---|---|---|---|
-| **BioBERT** ⭐ | **0.8847** | **0.8792** | **0.8903** | **0.9765** | **291** | **335** | **₹288,050** |
+| **BioBERT** ⭐ | **0.8847** | **0.8792** | **0.8903** | **0.9765** | **328** | **301** | **₹295,800** |
 | CRF Baseline | 0.8093 | 0.8542 | 0.7688 | 0.9633 | 913 | 867 | ₹757,700 |
 | Majority Class | 0.0000 | 0.0000 | 0.0000 | 0.8850 | — | — | — |
 
-> BioBERT reduces the estimated pharmacovigilance business cost by **~62%** vs the CRF baseline on the test set (₹757,700 → ₹288,050), driven mainly by a **3× reduction in missed Chemical/Disease entities**.
+> BioBERT reduces the estimated pharmacovigilance business cost by **~61%** vs the CRF baseline on the test set (₹757,700 → ₹295,800), driven mainly by a **~2.8× reduction in missed Chemical/Disease entities** (1,780 → 629 combined).
+
+---
+
+## 🏆 Champion vs Challenger — 3-Gate Promotion
+
+Every new training run is compared against the production champion using **3 promotion gates**:
+
+| Gate | Condition | Rationale |
+|---|---|---|
+| F1 Improvement | Challenger must beat champion by ≥ 0.005 | Meaningful accuracy gain only |
+| Overall F1 | ≥ 0.70 | Minimum viable entity-extraction quality |
+| Per-Entity Gap | ≤ 0.15 | Chemical/Disease F1 can't diverge too far — no lopsided models |
+
+> **Why strict gates?** A model that scores well on overall F1 but badly on one entity type
+> (e.g. great at Chemical, poor at Disease) would silently miss half the ADE signal in production.
+> The per-entity gap gate specifically prevents that failure mode from ever getting promoted.
+
+**Real run — REJECTED:**
+
+```
+CHAMPION vs CHALLENGER
+  Champion  : BC5CDR Clinical NER - BioBERT   F1=0.8847
+  Challenger: BioBERT                          F1=0.8847
+❌ CHALLENGER REJECTED — champion 'BC5CDR Clinical NER - BioBERT' retained
+   Reason: Gates failed: F1 improvement +0.0000 < 0.005
+TRAINING COMPLETE | Best model: BioBERT
+  F1=0.8847  P=0.8792  R=0.8903
+  Challenger status: REJECTED
+```
+
+Results logged to `ner_models/challenger_log.json` and visible in the dashboard Section 2 with per-gate ✅/❌ status.
+
+**Real cost breakdown** (BioBERT, test set):
+
+| Metric | Value |
+|---|---|
+| Missed Chemical Entities | `328` |
+| Missed Disease Entities | `301` |
+| False Positive Entities | `830` |
+| FN Chemical Cost | `₹164,000` |
+| FN Disease Cost | `₹90,300` |
+| FP Review Cost | `₹41,500` |
+| **Total Estimated Cost** | **`₹295,800`** |
+
+---
+
+## 🔬 Per-Entity Performance & Drift (Real Run)
+
+**Entity-level evaluation** (strict `seqeval`, BC5CDR champion — BioBERT):
+
+| Entity | Precision | Recall | F1 | Support |
+|---|---|---|---|---|
+| Chemical | 0.9268 | 0.9211 | **0.9239** | 5,385 |
+| Disease | 0.8236 | 0.8528 | **0.8380** | 4,424 |
+| **Overall** | **0.8792** | **0.8903** | **0.8847** | 9,809 |
+
+> Chemical entities are consistently easier to tag than Disease entities — disease mentions in
+> biomedical text have far more lexical variation (synonyms, abbreviations, multi-word spans)
+> than drug/chemical names, which tend to follow more standardized naming conventions.
+
+**PSI drift** (train vs test, real run):
+
+| Metric | PSI |
+|---|---|
+| Label distribution (overall) | `0.0011` |
+| Chemical entity PSI | `0.000038` |
+| Disease entity PSI | `0.000001` |
+
+> Per-entity F1 variance across repeated runs: `0.0018` — extremely stable. All PSI values are
+> far inside the `< 0.10` stable range, confirming train/test splits are well-matched distributionally.
 
 ---
 
@@ -545,6 +626,11 @@ Result: 30 passed, 0 failed
 
 > Building 20+ industry-level, end-to-end ML systems.
 
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?logo=linkedin)](https://www.linkedin.com/in/narendra-kalam/)
+[![Kaggle](https://img.shields.io/badge/Kaggle-Profile-20BEFF?logo=kaggle)](https://www.kaggle.com/narendrakalam)
+[![Portfolio](https://img.shields.io/badge/Portfolio-Visit-green?logo=github)](https://narendrakalam2001.github.io/)
+[![Email](https://img.shields.io/badge/Email-Contact-red?logo=gmail)](mailto:kalamnarendra2001@gmail.com)
+
 ### Portfolio Projects
 
 | # | Project | Domain | Champion Model | Key Metric |
@@ -560,6 +646,8 @@ Result: 30 passed, 0 failed
 | 9 | ABSA Sentiment Analysis | E-Commerce / Banking | RidgeClassifier | Macro-F1 = 0.6212 · ROC-AUC = 0.823 |
 | 10 | Fake News Detector | Media Tech / Gov Tech | XGBoost | F1 = 0.9993 · ROC = 1.0000 |
 | 11 | **BC5CDR Clinical NER** | **Biomedical NLP** | **BioBERT** | **F1 = 0.8847 · Chemical F1 = 0.9239** |
+| 12 | News Topic Modeling | Media Analytics | LDA (Gensim) | Cv = 0.6225 · Diversity = 0.92 |
+| 13 | Chest X-Ray Diagnosis | Healthcare AI | DenseNet121 | Mean AUC = 0.7864 · 14 classes |
 
 ---
 
