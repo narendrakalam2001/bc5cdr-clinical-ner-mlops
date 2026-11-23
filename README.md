@@ -8,6 +8,7 @@
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](Dockerfile)
 [![MLflow](https://img.shields.io/badge/MLflow-Tracked-orange.svg)](https://mlflow.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![HuggingFace Model](https://img.shields.io/badge/🤗%20Model-Public-yellow.svg)](https://huggingface.co/narendrakalam2001/bc5cdr-biobert-ner)
 
 > **Domain:** Biomedical NLP / Pharmacovigilance
 > **Problem:** Named Entity Recognition (Chemical + Disease) from clinical/biomedical text
@@ -60,13 +61,17 @@ from unstructured biomedical literature at scale.
 |---|---|
 | 🚀 **FastAPI (Swagger UI)** | [https://bc5cdr-clinical-ner-mlops.onrender.com/docs](https://bc5cdr-clinical-ner-mlops.onrender.com/docs) |
 | 📊 **Monitoring Dashboard** | [https://bc5cdr-clinical-ner-mlops.streamlit.app](https://bc5cdr-clinical-ner-mlops.streamlit.app) |
+| 🤗 **BioBERT Model (public, HF Hub)** | [huggingface.co/narendrakalam2001/bc5cdr-biobert-ner](https://huggingface.co/narendrakalam2001/bc5cdr-biobert-ner) |
 | 📓 **EDA Notebook** | [notebooks/bc5cdr_eda.ipynb](notebooks/bc5cdr_eda.ipynb) |
 
 > ⚠️ Render free tier: first request may take 30–60 seconds (cold start).
 > **Note:** The live demo runs the CRF model (F1=0.8093, ~2MB) for compatibility with 
-> free-tier hosting (512MB RAM). The BioBERT champion (F1=0.8847) is fully trained, 
-> evaluated, and documented above — see [Model Comparison Table](#-model-comparison-table). 
-> To run BioBERT locally: `python scripts/train_model.py` then `python scripts/run_api.py`.
+> free-tier hosting (512MB RAM). The BioBERT champion (F1=0.8847, ~410MB) is fully trained, 
+> evaluated, and **publicly hosted on HuggingFace Hub** (link above) — too large for a 
+> standard GitHub push, so it's auto-downloaded from the Hub at API startup via `HF_MODEL_REPO`, 
+> keeping the Git repo lightweight. Anyone (including recruiters/interviewers) can download 
+> and inspect the exact trained weights directly from the Hub, or run it locally: 
+> `python scripts/train_model.py` then `python scripts/run_api.py`.
 
 ---
 
@@ -471,7 +476,7 @@ curl -X POST "http://localhost:8000/predict_batch" \
 | **Experiment Tracking** | MLflow — SQLite backend (`sqlite:///mlruns/mlflow.db`), avoids deprecated filesystem store |
 | **Model Card** | Google Model Cards standard — JSON with metrics + thresholds |
 | **CI/CD** | GitHub Actions — pytest on every push |
-| **Deployment** | Render.com (FastAPI) + Streamlit Cloud (Dashboard) + Docker Compose |
+| **Deployment** | Render.com (FastAPI) + Streamlit Cloud (Dashboard) + Docker Compose + HuggingFace Hub (public BioBERT weights, auto-downloaded at API startup) |
 
 ---
 
@@ -624,11 +629,11 @@ Result: 30 passed, 0 failed
 
 **Narendra Kalam** — MSc Computer Science (Gold Medalist — NASSCOM, Full Stack Data Science + AI)
 
-> Building 20+ industry-level, end-to-end ML systems.
+> Building 30+ industry-level, end-to-end ML systems across all domains.
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?logo=linkedin)](https://www.linkedin.com/in/narendra-kalam/)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?logo=linkedin)](https://www.linkedin.com/in/narendra-kalam)
 [![Kaggle](https://img.shields.io/badge/Kaggle-Profile-20BEFF?logo=kaggle)](https://www.kaggle.com/narendrakalam)
-[![Portfolio](https://img.shields.io/badge/Portfolio-Visit-green?logo=github)](https://narendrakalam2001.github.io/)
+[![Portfolio](https://img.shields.io/badge/Portfolio-Visit-green?logo=github)](https://narendrakalam2001.github.io)
 [![Email](https://img.shields.io/badge/Email-Contact-red?logo=gmail)](mailto:kalamnarendra2001@gmail.com)
 
 ### Portfolio Projects
@@ -648,6 +653,24 @@ Result: 30 passed, 0 failed
 | 11 | **BC5CDR Clinical NER** | **Biomedical NLP** | **BioBERT** | **F1 = 0.8847 · Chemical F1 = 0.9239** |
 | 12 | News Topic Modeling | Media Analytics | LDA (Gensim) | Cv = 0.6225 · Diversity = 0.92 |
 | 13 | Chest X-Ray Diagnosis | Healthcare AI | DenseNet121 | Mean AUC = 0.7864 · 14 classes |
+| 14 | Real-Time Object Detection | Computer Vision / Retail-Security | YOLOv8s | mAP50-95 = 0.5341 · 32 FPS |
+| 15 | Face Emotion Recognition | EdTech / Retail CX | CNN-from-scratch | Macro-F1 = 0.5950 · 7 classes |
+| 16 | Customer Segmentation Engine | E-Commerce / BFSI | DBSCAN (Unsupervised) | Silhouette = 0.4056 |
+| 17 | Market Basket Analysis (Instacart) | Retail / Quick-Commerce | Apriori | 68,820 rules · mean lift = 15.66 |
+| 18 | E-Commerce / OTT Recommender | E-Commerce / Streaming | Hybrid (SVD + Content) | NDCG@10 = 0.0407 · 4 candidates |
+| 19 | Hospital Readmission Prediction | Healthcare / Hospital Ops | ExtraTrees | F1 = 0.2702 · ROC-AUC = 0.6513 |
+| 20 | HR Policy Intelligence Chatbot | HR Tech / Enterprise GenAI | Gemini 3.6 Flash + RAG | 30/30 tests · guardrail threshold=0.35 |
+| 21 | Employee Attrition Prediction | HR Tech / People Analytics | NeuralNet (MLP) | F1 = 0.3902 · ROC-AUC = 0.6698 |
+| 22 | ANN From Scratch — MNIST Digit Recognizer | Deep Learning Fundamentals | From-scratch ANN | Test Acc = 0.9740 · Macro F1 = 0.9739 |
+| 23 | Insurance Premium Prediction | Insurance / Actuarial ML | RandomForest | RMSLE = 1.1586 · 1.2M real policies |
+| 24 | Health Insurance Cross-Sell | Insurance / BFSI | ExtraTrees | ROC-AUC = 0.8404 · 67.8% calls saved |
+| 25 | Ride Fare Price Prediction | Mobility / Ride-Hailing | LightGBM | RMSE = $3.81 · R² = 0.8419 · 55M rows |
+| 26 | E-Commerce BI & SQL Analytics | Retail Analytics / BI | SQL + FastAPI + Streamlit | 40 tests passing · 100K orders |
+| 27 | AgriSense AI | AgriTech | EfficientNetB3 | Accuracy = 98.44% · Macro-F1 = 0.9843 · 38 classes |
+| 28 | AI Loan Underwriting Platform | BFSI / Fintech | XGBoost (credit + fraud) | Credit ROC-AUC = 0.858 · Fraud ROC-AUC = 0.955 · 242 tests |
+| 29 | CineMatch Pro | Entertainment / Media Tech | Hybrid SVD + TF-IDF + SBERT · CLIP · RoBERTa | RMSE = 0.8005 · Sentiment Acc = 94.26% · 56K posters |
+| 30 | DriveGuard AI | Computer Vision / Smart Cities | YOLOv8m + DeepSORT + Gemini RAG | mAP@0.5 = 0.680 · 31 API routes · 364 tests |
+| 31 | MathVision AI | EdTech / Computer Vision | TrOCR-large + SymPy | CER = 0.138 · 350/350 symbolic solved |
 
 ---
 
